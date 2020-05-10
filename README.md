@@ -1,8 +1,9 @@
 # [imageMe](http://www.imageme.xyz/)
 
 imageMe is a super simple image gallery server.
-
 Think `python -m SimpleHTTPServer` for pictures.
+Modified to make a slideshow with position and fps control.
+This have been modified to serve image from a timelapse camera running on RPi.
 
 ![](http://www.imageme.xyz/images/screenshots/image_index.png)
 
