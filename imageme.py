@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 imageMe is a super simple image gallery server.
 
@@ -116,8 +116,7 @@ def _create_index_file(
         '        </style>',
         '    </head>',
         '    <body onload="javascript:bodyLoadCallback()">',
-        '    <div class="content">',
-        '        <h2 class="header">' + header_text + '</h2>'
+        '    <div class="content">'
     ]
 
     # Populate the image gallery table
@@ -136,7 +135,7 @@ def _create_index_file(
       # )
     html += [
         '    <div  class="content">',
-        '    <img class="image" id="image" src=""/>',
+        '    <img class="image" id="image" src="" width="70%"/>',
         '    </div>',
         '    <input type="range" min="0" max="' + str(len(image_files)-1) + '" value="' + str(len(image_files)-1) + '" class="slider" id="myRange">',
         '    <p>Value: <span id="demo"></span></p>'
@@ -173,6 +172,7 @@ def _create_index_file(
         '        {',
         '          index++;',
         '          slider.value = index;',
+        '          output.innerHTML = slider.value + " " + image_src_array[slider.value];',
         '          img.setAttribute(\'src\', image_src_array[slider.value]);',
         '        }',
         '      }',
