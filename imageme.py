@@ -338,6 +338,17 @@ def _get_server_port():
     """
     return int(sys.argv[1]) if len(sys.argv) >= 2 else 8000
 
+def _get_dirpath():
+    """
+    Get the path specified. If given as the second
+    command line argument, we'll use that. Else we'll default to '.'.
+
+    @return {String} The path where images are. Default '.', overridden
+        by second command line argument.
+    """
+
+    return sys.argv[2] if len(sys.argv) >= 3 else '.'
+
 def _get_src_from_image(img, fallback_image_file):
     """
     Get base-64 encoded data as a string for the given image. Fallback to return
@@ -505,4 +516,4 @@ def serve_dir(dir_path):
 if __name__ == '__main__':
     # Generate indices and serve from the current directory downwards when run
     # as the entry point
-    serve_dir('.')
+    serve_dir(_get_dirpath())
