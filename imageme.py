@@ -12,6 +12,7 @@ what's called.
 
 # Dependencies
 import base64, io, os, re, sys, threading, http.server, socketserver
+from threading import Timer
 # Attempt to import PIL - if it doesn't exist we won't be able to make use of
 # some performance enhancing goodness, but imageMe will still work fine
 PIL_ENABLED = False
@@ -41,18 +42,30 @@ RESAMPLE = None if not PIL_ENABLED else Image.NEAREST
 THUMBNAIL_WIDTH = 800
 UNSUPPORTED_IMAGE_TYPE_DATA = ''
 
-class BackgroundIndexFileGenerator:
+class RepeatedTimer(object):
+    def __init__(self, interval, function, *args, **kwargs):
+        self._timer     = None
+        self.interval   = interval
+        self.function   = function
+        self.args       = args
+        self.kwargs     = kwargs
+        self.is_running = False
+        self.start()
 
-    def __init__(self, dir_path):
-        self.dir_path = dir_path
-        self.thread = threading.Thread(target=self._process, args=())
-        self.thread.daemon = True
+    def _run(self):
+        self.is_running = False
+        self.start()
+        self.function(*self.args, **self.kwargs)
 
-    def _process(self):
-        _create_index_files(self.dir_path)
+    def start(self):
+        if not self.is_running:
+            self._timer = Timer(self.interval, self._run)
+            self._timer.start()
+            self.is_running = True
 
-    def run(self):
-        self.thread.start()
+    def stop(self):
+        self._timer.cancel()
+        self.is_running = False
 
 def _clean_up(paths):
     """
@@ -499,16 +512,12 @@ def serve_dir(dir_path):
     # of page generation, but potentially slow serving for large image files
     print('Performing first pass index file generation')
     created_files = _create_index_files(dir_path, True)
-    if (PIL_ENABLED):
-        # If PIL is enabled, we'd like to process the HTML indexes to include
-        # generated thumbnails - this slows down generation so we don't do it
-        # first time around, but now we're serving it's good to do in the
-        # background
-        print('Performing PIL-enchanced optimised index file generation in background')
-        background_indexer = BackgroundIndexFileGenerator(dir_path)
-        background_indexer.run()
+
+    background_indexer = RepeatedTimer(120, _create_index_files, dir_path)
     # Run the server in the current location - this blocks until it's stopped
     _run_server()
+
+    background_indexer.stop()
     # Clean up the index files created earlier so we don't make a mess of
     # the image directories
     _clean_up(created_files)
