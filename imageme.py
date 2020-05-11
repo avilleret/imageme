@@ -460,7 +460,7 @@ def _get_thumbnail_src_from_file(dir_path, image_file, force_no_processing=False
     img = _get_thumbnail_image_from_file(dir_path, image_file)
     return _get_src_from_image(img, image_file)
 
-def _run_server():
+def _run_server(dir_path):
     """
     Run the image server. This is blocking. Will handle user KeyboardInterrupt
     and other exceptions appropriately and return control once the server is
@@ -474,10 +474,15 @@ def _run_server():
     # if this is not True then waiting for the address to be freed after the
     # last run can block a subsequent run
     socketserver.TCPServer.allow_reuse_address = True
+
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=dir_path, **kwargs)
+
     # Create the server instance
     server = socketserver.TCPServer(
         ('', port),
-        http.server.SimpleHTTPRequestHandler
+        Handler
     )
     # Print out before actually running the server (cheeky / optimistic, however
     # you want to look at it)
@@ -515,7 +520,7 @@ def serve_dir(dir_path):
 
     background_indexer = RepeatedTimer(120, _create_index_files, dir_path)
     # Run the server in the current location - this blocks until it's stopped
-    _run_server()
+    _run_server(dir_path)
 
     background_indexer.stop()
     # Clean up the index files created earlier so we don't make a mess of
