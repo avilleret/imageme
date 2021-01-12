@@ -518,7 +518,7 @@ def serve_dir(dir_path):
     print('Performing first pass index file generation')
     created_files = _create_index_files(dir_path, True)
 
-    background_indexer = RepeatedTimer(120, _create_index_files, dir_path)
+    background_indexer = RepeatedTimer(20, _create_index_files, dir_path)
     # Run the server in the current location - this blocks until it's stopped
     _run_server(dir_path)
 
